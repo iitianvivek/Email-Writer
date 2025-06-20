@@ -1,0 +1,35 @@
+import google.generativeai as genai
+import gradio as gr
+
+# Configure your Gemini API key
+genai.configure(api_key="API_KEY")
+
+# Load the model
+model = genai.GenerativeModel("models/gemma-3n-e4b-it")
+
+# Function to generate the email
+def generate_email(tone, recipient, points):
+    prompt = f"""
+Write a {tone} email to {recipient}.
+Here are the key points to include:
+{points}
+
+- The email should be clear, professional, and well-structured.
+- Include a subject line.
+- Do not use fake names.
+"""
+    response = model.generate_content(prompt)
+    return response.text.strip()
+
+# Gradio UI
+with gr.Blocks() as demo:
+    gr.Markdown("# 📧 AI Email Generator with Gemini")
+    tone = gr.Dropdown(["Formal", "Casual", "Apology", "Request", "Follow-up"], label="Select Tone")
+    recipient = gr.Textbox(label="Who is the email to?")
+    points = gr.Textbox(lines=5, placeholder="E.g. update about project delay, ask for extension...", label="Key Points")
+    output = gr.Textbox(label="Generated Email", lines=15)
+    btn = gr.Button("Generate Email")
+    
+    btn.click(fn=generate_email, inputs=[tone, recipient, points], outputs=output)
+
+demo.launch()
